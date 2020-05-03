@@ -1,0 +1,89 @@
+#Datos de Oxford -> https://github.com/OxCGRT/covid-policy-tracker/tree/master/data 
+pacman::p_load(readr, tidyverse, janitor, hrbrthemes)
+
+Sys.setlocale("LC_ALL", "es_ES.UTF-8") 
+options(scipen=999) 
+
+
+oxdb <- read_csv("OxCGRT_latest.csv")
+
+oxdb <- as_tibble(oxdb)
+oxdb$Date <- as.character(oxdb$Date)
+oxdb$Date <- as.Date(oxdb$Date, "%Y%m%d")
+
+oxdb <- clean_names(oxdb)
+oxdb <- 
+  oxdb %>% 
+  rename(fecha = date) %>% 
+  rename(País = country_name) %>% 
+  rename(cases = confirmed_cases) %>% 
+  rename(deaths = confirmed_deaths)
+
+colnames(oxdb)
+
+mx <- oxdb %>% filter(País == "Mexico")
+tail(mx)
+
+
+mx %>% select(fecha, cases, deaths) %>% filter(cases > 0) %>% 
+  mutate(casos_estimados = deaths*100) %>% 
+  mutate(fecha_estimada = fecha-17) %>% 
+  ggplot() + 
+  
+  geom_point(aes(x = fecha_estimada, y = casos_estimados, 
+                 color = "Casos estimados"))+
+  geom_line(aes(x = fecha_estimada, y = casos_estimados, 
+                color = "Casos estimados"), size = 2, alpha = 0.5)+
+  geom_text(aes(x = fecha_estimada, y = casos_estimados,label = ifelse(casos_estimados > 190000, casos_estimados,'')),hjust=1,vjust=0, size = 3)+
+  
+  geom_point(aes(x = fecha, y = cases, color = "Casos reportados"))+
+  geom_line(aes(x = fecha, y = cases, color = "Casos reportados"), size = 2, alpha = 0.5)+
+  geom_text(aes(x = fecha, y = cases,label = ifelse(cases == max(cases), cases,'')),hjust=0,vjust=0, size = 3)+
+  
+  theme_ipsum()+
+  
+  
+  labs(y="Casos", x=" ",
+       title="México: Casos estimados & casos reportados de Covid-19",
+       subtitle = "Casos estimados hasta el 15 de abril",
+       caption = "Elaboración propia con datos del European Center \nfor Disease Control and Prevention (ECDC) \nGráfica elaborada por @1LuisDavid.",
+       color = " ")+
+  
+  theme(plot.title = element_text(face = "bold", size = 16),
+        plot.subtitle = element_text(color = "black"),
+        plot.caption = element_text(face = "italic"))
+
+as.Date("2020-05-02") - 17
+
+
+
+
+
+######################
+mx %>% select(fecha, cases, deaths) %>% filter(cases > 0) %>% 
+  mutate(casos_estimados = deaths*800) %>% 
+  # mutate(fecha_estimada = fecha-17) %>% 
+  ggplot() + 
+  
+  geom_point(aes(x = fecha, y = casos_estimados, color = "Casos estimados"))+
+  geom_line(aes(x = fecha, y = casos_estimados, color = "Casos estimados"),
+            size = 2, alpha = 0.5)+
+  geom_text(aes(x = fecha, y = casos_estimados,label = ifelse(casos_estimados > 1500000, casos_estimados,'')),hjust=1,vjust=0, size = 3)+
+  
+  geom_point(aes(x = fecha, y = cases, color = "Casos reportados"))+
+  geom_line(aes(x = fecha, y = cases, color = "Casos reportados"), 
+            size = 2, alpha = 0.5)+
+  geom_text(aes(x = fecha, y = cases,label = ifelse(cases == max(cases), cases,'')),hjust=0,vjust=0, size = 3)+
+  
+  
+  theme_ipsum()+
+  
+  labs(y="Casos", x=" ",
+       title="México: Casos estimados & casos reportados de Covid-19",
+       subtitle = "Casos estimados hasta el 2 de mayo",
+       caption = "Elaboración propia con datos del European Center \nfor Disease Control and Prevention (ECDC) \nGráfica elaborada por @1LuisDavid.",
+       color = " ")+
+  
+  theme(plot.title = element_text(face = "bold", size = 16),
+        plot.subtitle = element_text(color = "black"),
+        plot.caption = element_text(face = "italic"))
